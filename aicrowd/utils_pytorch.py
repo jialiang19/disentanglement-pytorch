@@ -152,7 +152,7 @@ def make_representor(model, cuda=None):
     # https://github.com/pytorch/pytorch/issues/18106
     # model = deepcopy(model)
     cuda = use_cuda() if cuda is None else cuda
-    model = model.cuda() if cuda else model.cpu()
+    model = model.cuda() if cuda else model.cpu() 
 
     # Define the representation function
     def _represent(x):

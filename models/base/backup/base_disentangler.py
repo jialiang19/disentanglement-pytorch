@@ -22,8 +22,6 @@ class BaseDisentangler(object):
             self.device = 'cuda:0' 
         elif torch.cuda.is_available() and args.gpu_id == 1: 
             self.device = 'cuda:1' 
-        elif torch.cuda.is_available() and args.gpu_id == -1: 
-            self.device = 'cuda' 
         else: 
             self.device = 'cpu' 
         

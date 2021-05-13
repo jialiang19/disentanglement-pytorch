@@ -10,7 +10,7 @@ from architectures import encoders, decoders
 from common.utils import get_scheduler
 
 
-class AEModel(nn.Module):
+class PROAEModel(nn.Module):
     def __init__(self, encoder, decoder):
         super().__init__()
 
@@ -24,11 +24,11 @@ class AEModel(nn.Module):
         return torch.sigmoid(self.decoder(z))
 
     def forward(self, x):
-        z, _ = self.encode(x)
+        z = self.encode(x)
         return self.decode(z)
 
 
-class AE(BaseDisentangler):
+class PROAE(BaseDisentangler):
     def __init__(self, args):
         super().__init__(args)
 
@@ -39,7 +39,9 @@ class AE(BaseDisentangler):
         decoder = getattr(decoders, self.decoder_name)
 
         # model and optimizer
-        self.model = AEModel(encoder(self.z_dim, self.num_channels, self.image_size),
+        new_encoder = encoder(self.z_dim, self.num_channels, self.image_size)
+        new_encoder.new_task()  
+        self.model = PROAEModel(new_encoder,
                              decoder(self.z_dim, self.num_channels, self.image_size)).to(self.device)
         self.optim_G = optim.Adam(self.model.parameters(), lr=self.lr_G, betas=(self.beta1, self.beta2))
 

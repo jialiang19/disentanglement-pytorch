@@ -8,9 +8,10 @@ import torch.nn.functional as F
 from models.base.base_disentangler import BaseDisentangler
 from architectures import encoders, decoders
 from common.utils import get_scheduler
+from torchsummary import summary
 
 
-class AEModel(nn.Module):
+class PROAEModel(nn.Module):
     def __init__(self, encoder, decoder):
         super().__init__()
 
@@ -28,7 +29,7 @@ class AEModel(nn.Module):
         return self.decode(z)
 
 
-class AE(BaseDisentangler):
+class PROAE(BaseDisentangler):
     def __init__(self, args):
         super().__init__(args)
 
@@ -37,11 +38,16 @@ class AE(BaseDisentangler):
         self.decoder_name = args.decoder[0]
         encoder = getattr(encoders, self.encoder_name)
         decoder = getattr(decoders, self.decoder_name)
+        self.args = args
 
         # model and optimizer
-        self.model = AEModel(encoder(self.z_dim, self.num_channels, self.image_size),
-                             decoder(self.z_dim, self.num_channels, self.image_size)).to(self.device)
-        self.optim_G = optim.Adam(self.model.parameters(), lr=self.lr_G, betas=(self.beta1, self.beta2))
+        new_encoder = encoder(self.z_dim, self.num_channels,
+                              self.image_size).to(self.device)
+        new_encoder.new_task()
+        self.model = PROAEModel(new_encoder,
+                                decoder(self.z_dim, self.num_channels, self.image_size)).to(self.device)
+        self.optim_G = optim.Adam(self.model.parameters(
+        ), lr=self.lr_G, betas=(self.beta1, self.beta2))
 
         # nets
         self.nets = [self.model]
@@ -52,6 +58,7 @@ class AE(BaseDisentangler):
             'optim_G': self.optim_G,
         }
 
+        # to do: figure out how to do with setup_scheduler later
         self.setup_schedulers(args.lr_scheduler, args.lr_scheduler_args,
                               args.w_recon_scheduler, args.w_recon_scheduler_args)
 
@@ -59,9 +66,30 @@ class AE(BaseDisentangler):
         x_recon = kwargs['x_recon']
         x_true = kwargs['x_true']
         bs = self.batch_size
-        recon_loss = F.binary_cross_entropy(x_recon, x_true, reduction='sum') / bs * self.w_recon
+        recon_loss = F.binary_cross_entropy(
+            x_recon, x_true, reduction='sum') / bs * self.w_recon
 
         return recon_loss
+
+    def increase_dim(self):
+        print('increase the latent dimension by 1')
+        self.model.encoder.freeze_columns()
+        self.model.encoder.new_task()
+        decoder = getattr(decoders, self.decoder_name)
+        new_decoder = decoder(len(self.model.encoder.columns),
+                              self.num_channels, self.image_size).to(self.device)
+        self.model.decoder = new_decoder
+        self.optim_G = optim.Adam(self.model.parameters(
+        ), lr=self.lr_G, betas=(self.beta1, self.beta2))
+        # nets
+        self.nets = [self.model]
+        self.net_dict['G'] = self.model
+        self.optim_dict['optim_G'] = self.optim_G
+
+        # To Do: figure out what to do with scheduler later
+        self.setup_schedulers(self.args.lr_scheduler, self.args.lr_scheduler_args,
+                              self.args.w_recon_scheduler, self.args.w_recon_scheduler_args)
+        self.model.to(self.device)
 
     def train(self):
         while not self.training_complete():
@@ -81,7 +109,16 @@ class AE(BaseDisentangler):
                               input_image=x_true1,
                               recon_image=x_recon,
                               )
-            # end of epoch
+
+                if self.iter >= int(self.num_batches * self.args.inc_every_n_epoch) and self.iter % int(self.num_batches * self.args.inc_every_n_epoch) == 0:
+                    self.increase_dim()
+                    #summary(self.model, (1, 64, 64))
+                    for name, param in self.model.named_parameters():
+                        if param.requires_grad:
+                            print('required', name,param.data.shape) 
+                        else: 
+                            print('not-required', name,param.data.shape)
+           # end of epoch
         self.pbar.close()
 
     def test(self):

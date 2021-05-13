@@ -25,7 +25,7 @@ TOTAL_VAE_EPOCH = 'total_vae_epoch'
 LEARNING_RATE = 'learning_rate'
 
 # Algorithms
-ALGS = ('AE', 'VAE', 'BetaVAE', 'CVAE', 'IFCVAE')
+ALGS = ('AE', 'VAE', 'BetaVAE', 'CVAE', 'IFCVAE', 'PROAE', 'PROAE2', 'PROVAE')
 LOSS_TERMS = (FACTORVAE, DIPVAEI, DIPVAEII, BetaTCVAE, INFOVAE)
 
 # Datasets
@@ -38,8 +38,8 @@ TEST_DATASETS = DATASETS[0:2]  # celebA, dsprites_full
 # Architectures
 DISCRIMINATORS = ('SimpleDiscriminator', 'SimpleDiscriminatorConv64')
 TILERS = ('MultiTo2DChannel',)
-DECODERS = ('SimpleConv64', 'ShallowLinear', 'DeepLinear')
-ENCODERS = ('SimpleConv64', 'SimpleGaussianConv64', 'PadlessConv64', 'PadlessGaussianConv64',
+DECODERS = ('SimpleConv64', 'ShallowLinear', 'DeepLinear', 'SimpleConv64_v2')
+ENCODERS = ('ProConv64', 'ProConv64_v2', 'SimpleConv64', 'SimpleConv64_v2', 'SimpleGaussianConv64', 'PadlessConv64', 'PadlessGaussianConv64', 'ProGaussianConv64', 
             'ShallowGaussianLinear', 'DeepGaussianLinear')
 
 # Evaluation Metrics

@@ -3,8 +3,10 @@ from .vae import VAE
 from .betavae import BetaVAE
 from .cvae import CVAE
 from .ifcvae import IFCVAE
-
-
+from .pro_ae import PROAE 
+from .pro_ae_v2 import PROAE2
+from .pro_vae import PROVAE 
+from .pro_betavae import PROBetaVAE 
 # TODO: add author and license info to all files.
 # TODO: 3 different divergences in the InfoVAE paper https://arxiv.org/pdf/1706.02262.pdf
 # TODO: evaluation metrics

@@ -16,7 +16,8 @@ python3 main.py \
 --z_dim=8 \
 --w_recon=10000 \
 --use_wandb=false \
-
+--max_epochs=1e6 \ 
+--max_iter=1e6
 
 
 

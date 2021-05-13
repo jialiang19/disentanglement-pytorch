@@ -18,6 +18,8 @@ def get_args(sys_args):
     parser = argparse.ArgumentParser(description='disentanglement-pytorch')
 
     # NeurIPS2019 AICrowd Challenge
+    parser.add_argument('--gpu_id', default=0, type=int, help='run on either gpu 0 or gpu 1') 
+    parser.add_argument('--inc_every_n_epoch', default=1.0, type=float, help='increase the hidden dimension every # epoch, it is used specifically for the pro_ae.py') 
     parser.add_argument('--aicrowd_challenge', default=False, type=str2bool, help='Run is an AICrowd submission')
     parser.add_argument('--evaluation_metric', default=None, type=str, choices=c.EVALUATION_METRICS, nargs='+',
                         help='Metric to evaluate the model during training')
@@ -43,8 +45,8 @@ def get_args(sys_args):
     parser.add_argument('--test', default=False, type=str2bool, help='to test')
 
     # training hyper-params
-    parser.add_argument('--max_iter', default=3e7, type=float, help='maximum training iteration')
-    parser.add_argument('--max_epoch', default=3e7, type=float, help='maximum training epochs')
+    parser.add_argument('--max_iter', default=3e7, type=float, help='maximum training iteration') # change from 3e7 to 3e6
+    parser.add_argument('--max_epoch', default=3e7, type=float, help='maximum training epochs') # change from 3e7 to 3e6 
     parser.add_argument('--batch_size', default=64, type=int, help='batch size')
     parser.add_argument('--num_disc_layers', default=5, type=int, help='number of fc layers in discriminators')
     parser.add_argument('--size_disc_layers', default=1000, type=int, help='size of fc layers in discriminators')
